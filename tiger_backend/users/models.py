@@ -40,7 +40,7 @@ class User(AbstractUser):
 
     
 
-    # USERNAME_FIELD = 'email'
+    USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['name', 'mobile_no']
 
     def __str__(self):
