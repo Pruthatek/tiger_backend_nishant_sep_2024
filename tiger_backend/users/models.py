@@ -45,3 +45,33 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.email
+
+
+
+import random
+from django.core.mail import send_mail
+from django.conf import settings
+from django.db import models
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+class OTP(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    otp = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'OTP for {self.user.email}'
+
+    def send_otp(self):
+        self.otp = str(random.randint(100000, 999999))
+        self.save()
+        # Here, integrate your OTP sending logic (Email/SMS)
+        send_mail(
+            'Your OTP Code',
+            f'Your OTP is {self.otp}',
+            settings.EMAIL_HOST_USER,
+            [self.user.email],
+            fail_silently=False,
+        )
