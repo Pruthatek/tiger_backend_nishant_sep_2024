@@ -14,16 +14,14 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         model = User
         fields = ['name', 'email', 'mobile_no', 'password', 'confirm_password', 'gender', 'role']
         extra_kwargs = {
-            'password': {'write_only': True},
-            'email': {'required': True}
+            'password': {'write_only': True}
         }
 
     def validate(self, attrs):
-        # Check if passwords match
         if attrs['password'] != attrs['confirm_password']:
             raise ValidationError({"password": "Passwords do not match."})
-
-        # Check if the email is already in use
+        
+         # Check if the email is already in use
         if User.objects.filter(email=attrs['email']).exists():
             raise ValidationError({"email": "Email is already in use."})
 
@@ -37,28 +35,68 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         # Remove 'confirm_password' from validated_data before creating the user
         validated_data.pop('confirm_password')
 
-        # Use the email as the username
-        validated_data['username'] = validated_data['email']
+        # Auto-generate a unique username if it's not used
+        if 'username' not in validated_data:
+            validated_data['username'] = validated_data['email'].split('@')[0] + str(random.randint(1, 10000))
 
-        # Create the user
+        # Create the user without the confirm_password field
         user = User(**validated_data)
         user.set_password(validated_data['password'])
         user.save()
         return user
 
 
-class UserLoginSerializer(serializers.Serializer):
+
+
+# class UserLoginSerializer(serializers.Serializer):
+#     email = serializers.EmailField()
+#     password = serializers.CharField()
+
+#     def validate(self, attrs):
+#         email = attrs.get('email')
+#         password = attrs.get('password')
+
+#         user = User.objects.filter(email=email).first()
+#         if user and user.check_password(password):
+#             return user
+#         raise ValidationError("Invalid credentials")
+
+
+from rest_framework import serializers
+from .models import OTP, User
+from django.utils import timezone
+from datetime import timedelta
+
+class RequestOTPSerializer(serializers.Serializer):
     email = serializers.EmailField()
-    password = serializers.CharField()
 
-    def validate(self, attrs):
-        email = attrs.get('email')
-        password = attrs.get('password')
+    def validate_email(self, value):
+        if not User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("User with this email does not exist.")
+        return value
 
-        user = User.objects.filter(email=email).first()
-        if user and user.check_password(password):
-            return user
-        raise ValidationError("Invalid credentials")
+    def create(self, validated_data):
+        user = User.objects.get(email=validated_data['email'])
+        otp_instance = OTP.objects.create(user=user)
+        otp_instance.send_otp()
+        return otp_instance
+
+
+class VerifyOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp = serializers.CharField(max_length=6)
+
+    def validate(self, data):
+        email = data['email']
+        otp = data['otp']
+        try:
+            otp_record = OTP.objects.get(user__email=email, otp=otp)
+            # Optionally, you can add checks for expiration here
+        except OTP.DoesNotExist:
+            raise serializers.ValidationError("Invalid OTP or email.")
+        
+        data['user'] = otp_record.user  # Attach the user to the validated data
+        return data
 
 class RoleMasterSerializer(serializers.ModelSerializer):
     class Meta:
@@ -68,4 +106,4 @@ class RoleMasterSerializer(serializers.ModelSerializer):
 class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'phone', 'gender', 'role']
+        fields = ['id', 'name', 'email', 'mobile_no', 'gender', 'role']

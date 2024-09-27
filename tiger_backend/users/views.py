@@ -10,6 +10,8 @@ from rest_framework.generics import RetrieveAPIView
 from .models import *
 from .serializers import RoleMasterSerializer
 from rest_framework.permissions import IsAdminUser  # or custom permission class
+from rest_framework.views import APIView
+from rest_framework.authtoken.models import Token
 
 
 class UserRegistrationView(generics.CreateAPIView):
@@ -23,23 +25,48 @@ class UserRegistrationView(generics.CreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class UserLoginView(generics.GenericAPIView):
-    serializer_class = UserLoginSerializer
+# class UserLoginView(generics.GenericAPIView):
+#     serializer_class = UserLoginSerializer
+#     permission_classes = [AllowAny]
+
+#     def post(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         user = serializer.validated_data
+
+#         refresh = RefreshToken.for_user(user)
+
+#         return Response({
+#             'refresh': str(refresh),
+#             'access': str(refresh.access_token),
+#             'email': user.email,
+#             'role': user.role.role_name,
+#         }, status=status.HTTP_200_OK)
+
+
+
+class RequestOTPView(APIView):
     permission_classes = [AllowAny]
+    
+    def post(self, request):
+        serializer = RequestOTPSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "OTP sent to email."}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data
 
-        refresh = RefreshToken.for_user(user)
-
-        return Response({
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-            'email': user.email,
-            'role': user.role.role_name,
-        }, status=status.HTTP_200_OK)
+class VerifyOTPView(APIView):
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        serializer = VerifyOTPSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data['user']  # Assuming you save the user in the serializer
+            token, created = Token.objects.get_or_create(user=user)  # Get or create a token for the user
+            return Response({"message": "OTP verified. Login successful.", "token": token.key}, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class RoleMasterListView(generics.ListCreateAPIView):
@@ -59,15 +86,6 @@ class RoleMasterDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = RoleMasterSerializer
     permission_classes = [IsAdminUser]  # Only admins can modify roles
 
-
-
-# User = get_user_model()
-
-# class UserListView(ListAPIView):
-#     # permission_classes = [AllowAny]
-#     queryset = User.objects.all()
-#     serializer_class = UserListSerializer
-#     permission_classes = [IsAuthenticated]  # You can restrict access to authenticated users only, or remove this if you want public access.
 
 
 User = get_user_model()
