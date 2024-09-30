@@ -4,6 +4,9 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from .models import *
+import re
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError as DjangoValidationError
 
 User = get_user_model()
 
@@ -28,6 +31,19 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         # Check if the mobile number is already in use
         if User.objects.filter(mobile_no=attrs['mobile_no']).exists():
             raise ValidationError({"mobile_no": "Mobile number is already in use."})
+
+        if not re.match(r'^[a-zA-Z\s]+$', attrs['name']):
+            raise ValidationError({"name": "Name should not contain numbers or special characters."})
+        
+        # Validate mobile number (10 digits)
+        if not re.match(r'^\d{10}$', attrs['mobile_no']):
+            raise ValidationError({"mobile_no": "Mobile number must be 10 digits."})
+
+        # Validate email
+        try:
+            validate_email(attrs['email'])
+        except DjangoValidationError:
+            raise ValidationError({"email": "Invalid email address."})
 
         return attrs
 

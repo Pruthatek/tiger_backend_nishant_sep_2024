@@ -1,8 +1,13 @@
 # models.py
-
+import random
+from django.core.mail import send_mail
+from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.utils import timezone
+
+User = get_user_model()
 
 class RoleMaster(models.Model):
     id = models.AutoField(primary_key=True)
@@ -47,15 +52,6 @@ class User(AbstractUser):
         return self.email
 
 
-
-import random
-from django.core.mail import send_mail
-from django.conf import settings
-from django.db import models
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
-
 class OTP(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     otp = models.CharField(max_length=6)
@@ -75,3 +71,21 @@ class OTP(models.Model):
             [self.user.email],
             fail_silently=False,
         )
+
+
+
+class StateMaster(models.Model):
+    id = models.AutoField(primary_key=True)
+    state_name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.state_name
+
+
+class CityMaster(models.Model):
+    id = models.AutoField(primary_key=True)
+    state = models.ForeignKey(StateMaster, related_name='cities', on_delete=models.CASCADE)
+    city_name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.city_name
