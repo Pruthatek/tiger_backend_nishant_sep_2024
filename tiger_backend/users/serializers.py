@@ -105,14 +105,21 @@ class VerifyOTPSerializer(serializers.Serializer):
     def validate(self, data):
         email = data['email']
         otp = data['otp']
+        
         try:
             otp_record = OTP.objects.get(user__email=email, otp=otp)
-            # Optionally, you can add checks for expiration here
+            
+            # Check if OTP has expired
+            if otp_record.is_otp_expired():
+                raise serializers.ValidationError("OTP has expired. Please request a new one.")
+        
         except OTP.DoesNotExist:
             raise serializers.ValidationError("Invalid OTP or email.")
         
+        # OTP is valid and not expired
         data['user'] = otp_record.user  # Attach the user to the validated data
         return data
+
 
 class RoleMasterSerializer(serializers.ModelSerializer):
     class Meta:

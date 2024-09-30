@@ -159,3 +159,5 @@ REST_FRAMEWORK = {
 
 CORS_ALLOW_ALL_ORIGINS = True  # For development
 
+
+AUTH_USER_MODEL = 'users.User'

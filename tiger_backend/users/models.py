@@ -1,13 +1,10 @@
-# models.py
 import random
 from django.core.mail import send_mail
 from django.conf import settings
-from django.contrib.auth import get_user_model
-from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
+from django.db import models
 from django.utils import timezone
 
-User = get_user_model()
 
 class RoleMaster(models.Model):
     id = models.AutoField(primary_key=True)
@@ -29,7 +26,7 @@ class User(AbstractUser):
     created_date = models.DateTimeField(default=timezone.now)
     updated_date = models.DateTimeField(default=None, null=True)
 
-     # Resolve reverse accessor clashes by adding related_name attributes
+    # Resolve reverse accessor clashes by adding related_name attributes
     groups = models.ManyToManyField(
         Group,
         related_name="custom_user_set",  # Add this line
@@ -43,14 +40,13 @@ class User(AbstractUser):
         help_text="Specific permissions for this user."
     )
 
-    
-
-    # USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['name', 'mobile_no']
 
     def __str__(self):
         return self.email
 
+
+from datetime import timedelta
 
 class OTP(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -63,7 +59,7 @@ class OTP(models.Model):
     def send_otp(self):
         self.otp = str(random.randint(100000, 999999))
         self.save()
-        # Here, integrate your OTP sending logic (Email/SMS)
+        # Send OTP via email (or SMS)
         send_mail(
             'Your OTP Code',
             f'Your OTP is {self.otp}',
@@ -72,6 +68,10 @@ class OTP(models.Model):
             fail_silently=False,
         )
 
+    def is_otp_expired(self):
+        """Check if OTP is expired after 1 minute"""
+        expiration_time = self.created_at + timedelta(minutes=1)
+        return timezone.now() > expiration_time
 
 
 class StateMaster(models.Model):
