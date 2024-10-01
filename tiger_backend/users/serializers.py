@@ -13,18 +13,18 @@ from datetime import timedelta
 # User = get_user_model()
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
-    confirm_password = serializers.CharField(write_only=True)
+    # confirm_password = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
-        fields = ['name', 'email', 'mobile_no', 'password', 'confirm_password', 'gender', 'role']
-        extra_kwargs = {
-            'password': {'write_only': True}
-        }
+        fields = ['name', 'email', 'mobile_no', 'gender', 'role']
+        # extra_kwargs = {
+        #     'password': {'write_only': True}
+        # }
 
     def validate(self, attrs):
-        if attrs['password'] != attrs['confirm_password']:
-            raise ValidationError({"password": "Passwords do not match."})
+        # if attrs['password'] != attrs['confirm_password']:
+        #     raise ValidationError({"password": "Passwords do not match."})
         
          # Check if the email is already in use
         if User.objects.filter(email=attrs['email']).exists():
@@ -51,7 +51,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         # Remove 'confirm_password' from validated_data before creating the user
-        validated_data.pop('confirm_password')
+        # validated_data.pop('confirm_password')
 
         # Auto-generate a unique username if it's not used
         if 'username' not in validated_data:
@@ -59,7 +59,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
         # Create the user without the confirm_password field
         user = User(**validated_data)
-        user.set_password(validated_data['password'])
+        # user.set_password(validated_data['password'])
         user.save()
         return user
 
