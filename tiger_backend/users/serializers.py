@@ -1,14 +1,16 @@
 # serializers.py
 
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
-from .models import *
 import re
 from django.core.validators import validate_email
-from django.core.exceptions import ValidationError as DjangoValidationError
+from django.core.exceptions import ValidationError
+from .models import OTP, User, random, RoleMaster
+from django.utils import timezone
+from datetime import timedelta
 
-User = get_user_model()
+
+# User = get_user_model()
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True)
@@ -42,7 +44,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         # Validate email
         try:
             validate_email(attrs['email'])
-        except DjangoValidationError:
+        except ValidationError:
             raise ValidationError({"email": "Invalid email address."})
 
         return attrs
@@ -77,11 +79,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 #             return user
 #         raise ValidationError("Invalid credentials")
 
-
-from rest_framework import serializers
-from .models import OTP, User
-from django.utils import timezone
-from datetime import timedelta
 
 class RequestOTPSerializer(serializers.Serializer):
     email = serializers.EmailField()
