@@ -1,7 +1,18 @@
 # urls.py
-
 from django.urls import path
-from .views import *
+from .views import (UserRegistrationView,
+RequestOTPView,
+VerifyOTPView,
+UserDetailView,
+RoleMasterDetailView,
+RoleMasterListView,
+StateListCreateView,
+CityListCreateView,
+StoreSignatureGSTView,
+StoreBankDetailsView,
+StoreCreateView,
+StoreCancelView,
+)
 urlpatterns = [
     path('register/', UserRegistrationView.as_view(), name='register'),
     # path('login/', UserLoginView.as_view(), name='login'),
@@ -10,4 +21,10 @@ urlpatterns = [
     path('users/', UserDetailView.as_view(), name='user-list'),
     path('roles/', RoleMasterListView.as_view(), name='role-list'),
     path('roles/<int:pk>/', RoleMasterDetailView.as_view(), name='role-detail'),
+    path('states/', StateListCreateView.as_view(), name='state-list'),
+    path('cities/', CityListCreateView.as_view(), name='city-list'),
+    path('store/gst-signature/', StoreSignatureGSTView.as_view(), name='store-signature-gst'),
+    path('store-bank-details/', StoreBankDetailsView.as_view(), name='store-bank-details'),
+    path('create-store/', StoreCreateView.as_view(), name='create-store'),
+    path('cancel-registration/<int:pk>/', StoreCancelView.as_view(), name='cancel-registration'),   
 ]
