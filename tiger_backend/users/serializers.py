@@ -90,8 +90,13 @@ class RequestOTPSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         user = User.objects.get(email=validated_data['email'])
-        otp_instance = OTP.objects.create(user=user)
+        
+        # Try to get an existing OTP instance for the user, or create a new one if it doesn't exist
+        otp_instance, created = OTP.objects.get_or_create(user=user)
+        
+        # Update the OTP value and send it
         otp_instance.send_otp()
+        
         return otp_instance
 
 
@@ -241,3 +246,46 @@ class StoreCancelSerializer(serializers.ModelSerializer):
         model = StoreMaster
         fields = ['is_active']
     
+
+class BusinessUserRegistrationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['name', 'email', 'mobile_no', 'gender', 'role']
+
+    def validate(self, attrs):
+        if User.objects.filter(email=attrs['email']).exists():
+            raise ValidationError({"email": "Email is already in use."})
+
+        if User.objects.filter(mobile_no=attrs['mobile_no']).exists():
+            raise ValidationError({"mobile_no": "Mobile number is already in use."})
+
+        if not re.match(r'^[a-zA-Z\s]+$', attrs['name']):
+            raise ValidationError({"name": "Name should not contain numbers or special characters."})
+
+        if not re.match(r'^\d{10}$', attrs['mobile_no']):
+            raise ValidationError({"mobile_no": "Mobile number must be 10 digits."})
+
+        try:
+            validate_email(attrs['email'])
+        except ValidationError:
+            raise ValidationError({"email": "Invalid email address."})
+
+        return attrs
+
+    def create(self, validated_data):
+        if 'username' not in validated_data:
+            validated_data['username'] = validated_data['email'].split('@')[0] + str(random.randint(1, 10000))
+
+        user = User(**validated_data)
+        user.save()
+
+        # Generate and send OTP
+        otp_code = random.randint(100000, 999999)
+        otp_expiry = timezone.now() + timedelta(minutes=1)
+        otp_instance = OTP.objects.create(user=user)
+
+        otp_instance.send_otp()
+        # Here you would integrate with an SMS or email service to send the OTP
+        # send_otp_to_user(user.mobile_no, otp_code)
+
+        return user

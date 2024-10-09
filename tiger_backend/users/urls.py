@@ -12,9 +12,11 @@ StoreSignatureGSTView,
 StoreBankDetailsView,
 StoreCreateView,
 StoreCancelView,
+UserRegistrationViewBusiness,
 )
 urlpatterns = [
     path('register/', UserRegistrationView.as_view(), name='register'),
+    path('business-register/', UserRegistrationViewBusiness.as_view(), name='business-register'),
     # path('login/', UserLoginView.as_view(), name='login'),
     path('login/request-otp/', RequestOTPView.as_view(), name='request-otp'),
     path('login/verify-otp/', VerifyOTPView.as_view(), name='verify-otp'),
