@@ -77,7 +77,9 @@ class VerifyOTPView(APIView):
         if serializer.is_valid():
             user = serializer.validated_data['user']  # Assuming you save the user in the serializer
             token, created = Token.objects.get_or_create(user=user)  # Get or create a token for the user
-            return Response({"message": "OTP verified. Login successful.", "token": token.key}, status=status.HTTP_200_OK)
+            return Response({"message": "OTP verified. Login successful.", 
+                             "token": token.key,
+                             "user_id": user.id }, status=status.HTTP_200_OK)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
