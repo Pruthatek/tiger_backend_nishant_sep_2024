@@ -159,7 +159,7 @@ class StoreSignatureGSTSerializer(serializers.ModelSerializer):
     
     # Validate if signature image or bill image is provided
     def validate(self, data):
-        required_fields = ['store_name', 'pan_no', 'business_type', 'address_line_1', 
+        required_fields = ['business_name', 'pan_no', 'business_type', 'address_line_1', 
                            'address_line_2', 'pin_code', 'city', 'state']
 
         for field in required_fields:
