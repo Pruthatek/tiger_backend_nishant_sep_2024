@@ -177,6 +177,7 @@ class StoreSignatureGSTView(APIView):
             with open(full_file_path, 'wb+') as destination:
                 for chunk in signature_file.chunks():
                     destination.write(chunk)
+            request.data['bill_image_hash'] = file_path
         # Proceed with the serializer
         serializer = StoreSignatureGSTSerializer(data=request.data)
         if serializer.is_valid():
