@@ -198,7 +198,7 @@ class StoreBankDetailsView(APIView):
             bank_details = StoreMaster.objects.get(id=store_id)
         except StoreMaster.DoesNotExist:
             bank_details = None
-        request.data['user'] = request.user.id
+        # request.data['user'] = request.user.id
 
         if cheque_file:
             # Generate a unique file name based on the current timestamp
