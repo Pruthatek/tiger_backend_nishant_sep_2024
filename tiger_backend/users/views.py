@@ -163,7 +163,7 @@ class StoreSignatureGSTView(APIView):
                     destination.write(chunk)
 
             # Store the relative file path in the data
-            request.data['signature_hash'] = file_path
+            request.data['bill_image_hash'] = file_path
         if ele_bill_file:
             unique_name = f"{request.user.id} elec_bill"
             hashed_name = hashlib.md5(unique_name.encode()).hexdigest() + file_extension

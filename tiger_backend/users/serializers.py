@@ -154,7 +154,7 @@ class StoreSignatureGSTSerializer(serializers.ModelSerializer):
             'business_name', 'pan_no', 'business_type', 'address_line_1', 
             'address_line_2', 'pin_code', 'city', 'state', 
             'signature_hash', 'bill_image_hash', 'store_email', 
-            'store_phone', 'user', "is_gst", "gstin"
+            'store_phone', 'user', "is_gst", "gst_no"
         ]
     
     # Validate if signature image or bill image is provided
