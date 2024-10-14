@@ -211,6 +211,11 @@ class StoreBankDetailsSerializer(serializers.ModelSerializer):
         if value not in valid_account_types:
             raise serializers.ValidationError(f"Account type must be one of {valid_account_types}.")
         return value
+    
+    def validate_cheque_hash(self, value):
+        if not value or value.strip() == "":
+            raise serializers.ValidationError("Cheque hash cannot be empty.")
+        return value
     class Meta:
         model = StoreMaster
         fields = ['bank_account_number', 'bank_account_holder_name', 'bank_ifsc_code', 'bank_account_type', "cheque_hash"]

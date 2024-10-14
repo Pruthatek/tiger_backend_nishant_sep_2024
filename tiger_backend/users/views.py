@@ -181,8 +181,11 @@ class StoreSignatureGSTView(APIView):
         # Proceed with the serializer
         serializer = StoreSignatureGSTSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            store_record = serializer.save()
+            return Response({
+                "store_id": store_record.id,  # Send the store ID in response
+                "data": serializer.data
+            }, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -190,7 +193,13 @@ class StoreSignatureGSTView(APIView):
 class StoreBankDetailsView(APIView):
     def post(self, request, format=None):
         cheque_file = request.FILES.get('cancelled_cheque')
+        store_id = request.data.get('store_id')
+        try:
+            bank_details = StoreMaster.objects.get(id=store_id)
+        except StoreMaster.DoesNotExist:
+            bank_details = None
         request.data['user'] = request.user.id
+
         if cheque_file:
             # Generate a unique file name based on the current timestamp
             
@@ -215,7 +224,10 @@ class StoreBankDetailsView(APIView):
             # Store the relative file path in the data
             request.data['cheque_hash'] = file_path
 
-        serializer = StoreBankDetailsSerializer(data=request.data)
+        if bank_details:
+            serializer = StoreBankDetailsSerializer(bank_details, data=request.data, partial=True)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -224,7 +236,16 @@ class StoreBankDetailsView(APIView):
 
 class StoreCreateView(APIView):
     def post(self, request, format=None):
-        serializer = StoreCreateSerializer(data=request.data)
+        store_id = request.data.get('store_id')
+        try:
+            bank_details = StoreMaster.objects.get(id=store_id)
+        except StoreMaster.DoesNotExist:
+            bank_details = None
+        if bank_details:
+            serializer = StoreCreateSerializer(bank_details, data=request.data, partial=True)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # serializer = StoreCreateSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)

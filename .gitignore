@@ -1,3 +1,4 @@
 tigerenv
 *.pyc
 venv
+media/
