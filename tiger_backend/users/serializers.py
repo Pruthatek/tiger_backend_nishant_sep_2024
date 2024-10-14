@@ -160,14 +160,16 @@ class StoreSignatureGSTSerializer(serializers.ModelSerializer):
     # Validate if signature image or bill image is provided
     def validate(self, data):
         required_fields = ['business_name', 'pan_no', 'business_type', 'address_line_1',  
-                           'address_line_2', 'pin_code', 'city', 'state']
+                           'address_line_2', 'pin_code', 'city', 'state','signature_hash']
 
         for field in required_fields:
             if not data.get(field):
                 raise serializers.ValidationError(f"{field} is required.")
 
         gst_selection = data.get('is_gst')
-        
+        if not data.get('signature_hash'):
+            raise serializers.ValidationError("Signature image is required.")
+
         if gst_selection == 'I Have GSTIN Number' and not data.get('signature_hash'):
             raise serializers.ValidationError("Signature image is required if GSTIN number is provided.")
         
@@ -211,7 +213,7 @@ class StoreBankDetailsSerializer(serializers.ModelSerializer):
         return value
     class Meta:
         model = StoreMaster
-        fields = ['bank_account_number', 'bank_account_holder_name', 'bank_ifsc_code', 'bank_account_type']
+        fields = ['bank_account_number', 'bank_account_holder_name', 'bank_ifsc_code', 'bank_account_type', "cheque_hash"]
 
 
 class StoreCreateSerializer(serializers.ModelSerializer):

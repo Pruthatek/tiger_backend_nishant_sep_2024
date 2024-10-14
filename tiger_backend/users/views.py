@@ -163,7 +163,7 @@ class StoreSignatureGSTView(APIView):
                     destination.write(chunk)
 
             # Store the relative file path in the data
-            request.data['bill_image_hash'] = file_path
+            request.data['signature_hash'] = file_path
         if ele_bill_file:
             unique_name = f"{request.user.id} elec_bill"
             hashed_name = hashlib.md5(unique_name.encode()).hexdigest() + file_extension
@@ -189,6 +189,32 @@ class StoreSignatureGSTView(APIView):
 
 class StoreBankDetailsView(APIView):
     def post(self, request, format=None):
+        cheque_file = request.FILES.get('cancelled_cheque')
+        request.data['user'] = request.user.id
+        if cheque_file:
+            # Generate a unique file name based on the current timestamp
+            
+            user_id = str(request.user.id)
+            original_file_name = cheque_file.name
+            timestamp = str(int(time.time()))
+            file_extension = os.path.splitext(original_file_name)[1]
+
+            # Create hash using user ID and timestamp for unique filenames
+            hashed_name = hashlib.md5(f'{user_id}_{timestamp}_cheque'.encode()).hexdigest() + file_extension
+            file_path = os.path.join('media/cheques/', hashed_name)
+
+            # Full path where the file will be saved
+            full_file_path = os.path.join(settings.MEDIA_ROOT, file_path)
+
+            # Save the file in the specified folder
+            os.makedirs(os.path.dirname(full_file_path), exist_ok=True)
+            with open(full_file_path, 'wb+') as destination:
+                for chunk in cheque_file.chunks():
+                    destination.write(chunk)
+
+            # Store the relative file path in the data
+            request.data['cheque_hash'] = file_path
+
         serializer = StoreBankDetailsSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()

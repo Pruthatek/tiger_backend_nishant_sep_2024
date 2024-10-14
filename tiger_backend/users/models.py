@@ -117,6 +117,7 @@ class StoreMaster(models.Model):
     bank_account_holder_name = models.CharField(max_length=100, null=True)
     bank_ifsc_code = models.CharField(max_length=20, null=True)
     bank_account_type = models.CharField(max_length=50, null=True)
+    cheque_hash = models.CharField(max_length=255, null=True)
     is_gst = models.CharField(max_length=100, choices=GSTIN_CHOICES, null=True)
     pan_no = models.CharField(max_length=20, null=True)
     gst_no = models.CharField(max_length=20, blank=True, null=True)
