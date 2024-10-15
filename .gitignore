@@ -2,3 +2,7 @@ tigerenv
 *.pyc
 venv
 media/
+*.sqlite3
+
+
+
