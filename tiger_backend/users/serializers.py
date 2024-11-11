@@ -281,7 +281,7 @@ class BusinessUserRegistrationSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         if 'username' not in validated_data:
-            validated_data['username'] = validated_data['email'].split('@')[0] + str(random.randint(1, 10000))
+            validated_data['username'] = validated_data['email']
 
         user = User(**validated_data)
         user.save()
