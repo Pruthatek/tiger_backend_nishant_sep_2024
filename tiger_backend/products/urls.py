@@ -14,5 +14,5 @@ urlpatterns = [
     path('brands/create/', brand_create, name='brand-create'),  # Create a new brand
     path('brands/update/<int:brand_id>/', brand_update, name='brand-update'),  # Update an existing brand
     path('brands/delete/<int:brand_id>/', brand_delete, name='brand-delete'),
-    
+
 ]

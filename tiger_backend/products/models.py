@@ -41,6 +41,7 @@ class ProductMaster(models.Model):
     created_date = models.DateTimeField(auto_now_add=True)
     updated_by = models.CharField(max_length=100, blank=True, null=True)
     updated_date = models.DateTimeField(auto_now=True)
+    is_valid = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
@@ -132,11 +133,12 @@ class AttributeSubcategoryMapping(models.Model):
 # VariantAttributeMapping
 class VariantAttributeMapping(models.Model):
     product_variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE, related_name='attributes')
-    attribute = models.ForeignKey(AttributeMaster, on_delete=models.CASCADE, related_name='variant_mappings')
+    attribute_name = models.CharField(max_length=255, null=True)
     attribute_value = models.CharField(max_length=255)  # Example: 'Red', 'XL'
     created_by = models.CharField(max_length=100)
     created_date = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
+    
 
     def __str__(self):
-        return f"{self.product_variant.variant_name} - {self.attribute.attribute_name}: {self.attribute_value}"
+        return f"{self.product_variant.variant_name} - {self.attribute_name}: {self.attribute_value}"
